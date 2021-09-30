@@ -1,0 +1,17 @@
+.square-box {
+    width: 33%;
+    height: 0;
+    padding-top: 33%;
+    position: absolute;
+    right: 20px;
+    top: 20px;
+  }
+
+  .landmark-grid-container {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top:0;
+    left:0;
+    background-color: #99999999;
+  }

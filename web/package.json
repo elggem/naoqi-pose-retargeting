@@ -1,0 +1,14 @@
+{
+  "name": "pepper-pose-retargeting",
+  "version": "1.0.0",
+  "description": "Mediapipe Pose detection and retargeting on Pepper robot",
+  "author": "Ralf Mayet (Adapt)",
+  "license": "MIT",
+  "dependencies": {
+    "@mediapipe/camera_utils": "^0.3.1632432234",
+    "@mediapipe/control_utils": "^0.6.1629159505",
+    "@mediapipe/control_utils_3d": "^0.2.1625245254",
+    "@mediapipe/drawing_utils": "^0.3.1620248257",
+    "@mediapipe/pose": "^0.4.1630009814"
+  }
+}

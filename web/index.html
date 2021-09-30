@@ -1,70 +1,35 @@
+<!DOCTYPE html>
+<html lang="en" >
 <head>
+  <meta charset="UTF-8">
+  <title>PepperPoseRetargeting</title>
+ 
+  <link rel="stylesheet" type="text/css" href="node_modules/@mediapipe/control_utils_3d/landmark_grid.css">
+  <link rel="stylesheet" type="text/css" href="node_modules/@mediapipe/control_utils/control_utils.css">
+ 
+  <script src="node_modules/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="node_modules/@mediapipe/control_utils_3d/control_utils_3d.js"  crossorigin="anonymous"></script>
+  <script src="node_modules/@mediapipe/control_utils/control_utils.js"></script>
+  <script src="node_modules/@mediapipe/drawing_utils/drawing_utils.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils_3d@0.2/landmark_grid.css" crossorigin="anonymous">
-    <meta charset="utf-8">
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils@0.6/control_utils.css" crossorigin="anonymous">
-  
-    <link rel="stylesheet" type="text/css" href="demo.css" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils_3d@0.2/control_utils_3d.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils@0.6/control_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils@0.3/drawing_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose@0.4/pose.js" crossorigin="anonymous"></script>
-  
-    <script type="module" src="mediapipe-pose.js"></script>
+  <script src="node_modules/@mediapipe/pose/pose.js"></script>
+  <script type="module" src="./script.js"></script>
+
+  <link rel="stylesheet" href="./style.css">
 
 </head>
-
-
-
 <body>
+  <div class="container">
+    <video class="input_video"></video>
+    <canvas class="output_canvas" width="1280px" height="720px"></canvas>
+  </div>
 
+  <div class="control-panel"></div>
 
-    <style>
-
-    </style>
-
-
-    <style>
-      .square-box {
-        width: 33%;
-        height: 0;
-        padding-top: 33%;
-        position: absolute;
-        right: 20px;
-        top: 20px;
-      }
-  
-      .landmark-grid-container {
-        height: 100%;
-        width: 100%;
-        position: absolute;
-        top:0;
-        left:0;
-        background-color: #99999999;
-      }
-    </style>
-
-
-
-    <div class="container">
-      <video class="input_video"></video>
-      <canvas class="output_canvas" width="1280px" height="720px"></canvas>
-      <div class="loading">
-        <div class="spinner"></div>
-        <div class="message">
-          Loading
-        </div>
-      </div>
-    </div>
-    <div class="control-panel">
-    </div>
-    <div class='square-box'>
-      <div class="landmark-grid-container">
-      </div>
-    </div>
-
-
+  <div class='square-box'>
+    <div class="landmark-grid-container"></div>
+  </div>
 
 
 </body>
+</html>

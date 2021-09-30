@@ -8,6 +8,8 @@ except ImportError:
   from http.server import SimpleHTTPRequestHandler
   import socketserver
 
+import ssl
+
 # this makes it possible to run the script without naqi for testing purposes
 try:
   import qi
@@ -138,7 +140,12 @@ if __name__ == "__main__":
   
   ThreadedTCPServer.allow_reuse_address = True
   server = ThreadedTCPServer(("", PORT), NaoQiHandler)
-  
+
+  server.socket = ssl.wrap_socket (server.socket,
+        keyfile="certs/localhost-key.pem", 
+        certfile="certs/localhost.pem", 
+        server_side=True)
+
   print("Serving at port: {}".format(PORT))
   server.serve_forever()
   print("Stopped serving at port: {}".format(PORT))
