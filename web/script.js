@@ -29,8 +29,6 @@ const grid = new LandmarkGrid(landmarkContainer, {
 let activeEffect = 'mask';
 
 function onResults(results) {
-    // Hide the spinner.
-    document.body.classList.add('loaded');
     // Update the frame rate.
     fpsControl.tick();
     // Draw the overlays.
@@ -85,11 +83,16 @@ const options = {
     }
 };
 
-const pose = new mpPose.Pose(options);
-pose.onResults(onResults);
+// var pose = null;
 
-// Present a control panel through which the user can manipulate the solution
-// options.
+// setTimeout(function() { 
+    
+    const pose = new mpPose.Pose(options); 
+    pose.onResults(onResults); 
+
+
+// // Present a control panel through which the user can manipulate the solution
+// // options.
 new controls
     .ControlPanel(controlsElement, {
     selfieMode: true,
@@ -159,3 +162,9 @@ new controls
     activeEffect = x['effect'];
     pose.setOptions(options);
 });
+
+
+// }, 5000);
+
+// const pose = new mpPose.Pose(options);
+// pose.onResults(onResults);
