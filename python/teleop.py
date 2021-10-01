@@ -7,7 +7,83 @@ import cv2 as cv
 import numpy as np
 import mediapipe as mp
 
-from ../utils import CvFpsCalc
+from utils import CvFpsCalc
+from utils import KeypointsToAngles
+
+keypointsToAngles = KeypointsToAngles()
+
+"""
+# Mediapipe Mapping:
+  NOSE = 0
+  LEFT_EYE_INNER = 1
+  LEFT_EYE = 2
+  LEFT_EYE_OUTER = 3
+  RIGHT_EYE_INNER = 4
+  RIGHT_EYE = 5
+  RIGHT_EYE_OUTER = 6
+  LEFT_EAR = 7
+  RIGHT_EAR = 8
+  MOUTH_LEFT = 9
+  MOUTH_RIGHT = 10
+  LEFT_SHOULDER = 11
+  RIGHT_SHOULDER = 12
+  LEFT_ELBOW = 13
+  RIGHT_ELBOW = 14
+  LEFT_WRIST = 15
+  RIGHT_WRIST = 16
+  LEFT_PINKY = 17
+  RIGHT_PINKY = 18
+  LEFT_INDEX = 19
+  RIGHT_INDEX = 20
+  LEFT_THUMB = 21
+  RIGHT_THUMB = 22
+  LEFT_HIP = 23
+  RIGHT_HIP = 24
+  LEFT_KNEE = 25
+  RIGHT_KNEE = 26
+  LEFT_ANKLE = 27
+  RIGHT_ANKLE = 28
+  LEFT_HEEL = 29
+  RIGHT_HEEL = 30
+  LEFT_FOOT_INDEX = 31
+  RIGHT_FOOT_INDEX = 32
+
+# OpenPose Mapping:
+    body_mapping = {'0':  "Nose",      -> 0
+                    '1':  "Neck",      -? 11+12
+
+                    '2':  "RShoulder", -> 12
+                    '3':  "RElbow",    -> 14
+                    '4':  "RWrist",    -> 16
+
+                    '5':  "LShoulder", -> 11
+                    '6':  "LElbow",    -> 13
+                    '7':  "LWrist",    -> 15
+
+                    '8':  "MidHip"      -> 23+24}
+
+
+obtain_LShoulderPitchRoll_angles(self, P1, P5, P6, P8):
+obtain_RShoulderPitchRoll_angles(self, P1, P2, P3, P8):
+
+obtain_LElbowYawRoll_angle(self, P1, P5, P6, P7):
+obtain_RElbowYawRoll_angle(self, P1, P2, P3, P4):
+
+obtain_HipPitch_angles(self, P0_curr, P8_curr):
+
+obtain_LShoulderPitchRoll_angles(self, p[11]+p[12], p[11], p[13], p[23+24]):
+obtain_RShoulderPitchRoll_angles(self, p[11]+p[12], p[12], p[14], p[23+24]):
+
+
+obtain_LElbowYawRoll_angle(p[11]+p[12], p[11], p[13], p[15])
+obtain_RElbowYawRoll_angle(p[11]+p[12], p[12], p[14], p[16])
+
+
+obtain_HipPitch_angles(self, p[0], p[23+24]):
+
+"""
+
+
 
 
 def get_args():
@@ -17,7 +93,6 @@ def get_args():
     parser.add_argument("--width", help='cap width', type=int, default=960)
     parser.add_argument("--height", help='cap height', type=int, default=540)
 
-    # parser.add_argument('--upper_body_only', action='store_true')  # 0.8.3 or less
     parser.add_argument("--model_complexity",
                         help='model_complexity(0,1(default),2)',
                         type=int,
@@ -30,14 +105,9 @@ def get_args():
                         help='min_tracking_confidence',
                         type=float,
                         default=0.5)
-    parser.add_argument('--enable_segmentation', action='store_true')
-    parser.add_argument("--segmentation_score_th",
-                        help='segmentation_score_threshold',
-                        type=float,
-                        default=0.5)
-
     parser.add_argument('--use_brect', action='store_true')
     parser.add_argument('--plot_world_landmark', action='store_true')
+    parser.add_argument('--enable_teleop', action='store_true')
 
     args = parser.parse_args()
 
@@ -45,42 +115,34 @@ def get_args():
 
 
 def main():
-    # 引数解析 #################################################################
     args = get_args()
 
     cap_device = args.device
     cap_width = args.width
     cap_height = args.height
 
-    # upper_body_only = args.upper_body_only
     model_complexity = args.model_complexity
     min_detection_confidence = args.min_detection_confidence
     min_tracking_confidence = args.min_tracking_confidence
-    enable_segmentation = args.enable_segmentation
-    segmentation_score_th = args.segmentation_score_th
 
     use_brect = args.use_brect
     plot_world_landmark = args.plot_world_landmark
+    enable_teleop = args.enable_teleop
 
-    # カメラ準備 ###############################################################
     cap = cv.VideoCapture(cap_device)
     cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
 
-    # モデルロード #############################################################
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(
-        # upper_body_only=upper_body_only,
         model_complexity=model_complexity,
-        enable_segmentation=enable_segmentation,
+        enable_segmentation=False,
         min_detection_confidence=min_detection_confidence,
         min_tracking_confidence=min_tracking_confidence,
     )
 
-    # FPS計測モジュール ########################################################
     cvFpsCalc = CvFpsCalc(buffer_len=10)
 
-    # World座標プロット ########################################################
     if plot_world_landmark:
         import matplotlib.pyplot as plt
         
@@ -91,63 +153,80 @@ def main():
     while True:
         display_fps = cvFpsCalc.get()
 
-        # カメラキャプチャ #####################################################
         ret, image = cap.read()
         if not ret:
             break
-        image = cv.flip(image, 1)  # ミラー表示
+        image = cv.flip(image, 1)
         debug_image = copy.deepcopy(image)
 
-        # 検出実施 #############################################################
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
         results = pose.process(image)
 
-        # 描画 ################################################################
-        if enable_segmentation and results.segmentation_mask is not None:
-            # セグメンテーション
-            mask = np.stack((results.segmentation_mask, ) * 3,
-                            axis=-1) > segmentation_score_th
-            bg_resize_image = np.zeros(image.shape, dtype=np.uint8)
-            bg_resize_image[:] = (0, 255, 0)
-            debug_image = np.where(mask, debug_image, bg_resize_image)
         if results.pose_landmarks is not None:
-            # 外接矩形の計算
             brect = calc_bounding_rect(debug_image, results.pose_landmarks)
-            # 描画
-            debug_image = draw_landmarks(
-                debug_image,
-                results.pose_landmarks,
-                # upper_body_only,
-            )
+            debug_image = draw_landmarks(debug_image, results.pose_landmarks)
             debug_image = draw_bounding_rect(use_brect, debug_image, brect)
 
-        # World座標プロット ###################################################
         if plot_world_landmark:
             if results.pose_world_landmarks is not None:
-                plot_world_landmarks(
-                    plt,
-                    ax,
-                    results.pose_world_landmarks,
-                )
+                plot_world_landmarks(plt, ax, results.pose_world_landmarks)
 
-        # FPS表示
-        if enable_segmentation and results.segmentation_mask is not None:
-            fps_color = (255, 255, 255)
-        else:
-            fps_color = (0, 255, 0)
+        if enable_teleop:
+            if results.pose_world_landmarks is not None:
+                cv.putText(debug_image, "TRACKING", (cap_width-100, 30),
+                   cv.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2, cv.LINE_AA)
+                do_teleop(results.pose_world_landmarks)
+
+
         cv.putText(debug_image, "FPS:" + str(display_fps), (10, 30),
-                   cv.FONT_HERSHEY_SIMPLEX, 1.0, fps_color, 2, cv.LINE_AA)
+                   cv.FONT_HERSHEY_SIMPLEX, 1.0, (0, 145, 255), 2, cv.LINE_AA)
 
-        # キー処理(ESC：終了) #################################################
         key = cv.waitKey(1)
         if key == 27:  # ESC
             break
 
-        # 画面反映 #############################################################
-        cv.imshow('MediaPipe Pose Demo', debug_image)
+        cv.imshow('Pepper Teleop', debug_image)
 
     cap.release()
     cv.destroyAllWindows()
+
+
+def do_teleop(landmarks):
+    p = []
+    for index, landmark in enumerate(landmarks.landmark):
+        p.append([landmark.x, landmark.y, landmark.z])
+    p = np.array(p)
+
+    LShoulderPitch, LShoulderRoll = keypointsToAngles.obtain_LShoulderPitchRoll_angles(p[11]+p[12], p[11], p[13], p[23]+p[24])
+    RShoulderPitch, RShoulderRoll = keypointsToAngles.obtain_RShoulderPitchRoll_angles(p[11]+p[12], p[12], p[14], p[23]+p[24])
+    
+    LElbowYaw, LElbowRoll = keypointsToAngles.obtain_LElbowYawRoll_angle(p[11]+p[12], p[11], p[13], p[15])
+    RElbowYaw, RElbowRoll = keypointsToAngles.obtain_RElbowYawRoll_angle(p[11]+p[12], p[12], p[14], p[16])
+
+    HipPitch = keypointsToAngles.obtain_HipPitch_angles(p[0], p[23]+p[24])
+
+    print(LShoulderPitch)
+    print(RShoulderPitch)
+
+    print("teleop mhmhmh")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def calc_bounding_rect(image, landmarks):
