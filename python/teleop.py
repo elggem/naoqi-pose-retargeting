@@ -200,13 +200,14 @@ def do_teleop(landmarks):
     LShoulderPitch, LShoulderRoll = keypointsToAngles.obtain_LShoulderPitchRoll_angles(p[11]+p[12], p[11], p[13], p[23]+p[24])
     RShoulderPitch, RShoulderRoll = keypointsToAngles.obtain_RShoulderPitchRoll_angles(p[11]+p[12], p[12], p[14], p[23]+p[24])
     
-    LElbowYaw, LElbowRoll = keypointsToAngles.obtain_LElbowYawRoll_angle(p[11]+p[12], p[11], p[13], p[15])
-    RElbowYaw, RElbowRoll = keypointsToAngles.obtain_RElbowYawRoll_angle(p[11]+p[12], p[12], p[14], p[16])
+    LElbowYaw, LElbowRoll = keypointsToAngles.obtain_LElbowYawRoll_angle(p[11]+p[12], p[11], p[13], p[15]) # yaw untested
+    RElbowYaw, RElbowRoll = keypointsToAngles.obtain_RElbowYawRoll_angle(p[11]+p[12], p[12], p[14], p[16]) # yaw untested
 
-    HipPitch = keypointsToAngles.obtain_HipPitch_angles(p[0], p[23]+p[24])
+    HipPitch = keypointsToAngles.obtain_HipPitch_angles(p[11]+p[12], p[23]+p[24])
 
-    print(LShoulderPitch)
-    print(RShoulderPitch)
+    print(HipPitch)
+
+    # confirmed working: shoulderpitch, shoulderroll, elbowroll, 
 
     print("teleop mhmhmh")
 
