@@ -10,6 +10,9 @@ import mediapipe as mp
 from utils import CvFpsCalc
 from utils import KeypointsToAngles
 
+from socket_send import SocketSend
+from socket_receive import SocketReceiveSignal
+
 keypointsToAngles = KeypointsToAngles()
 
 """
@@ -141,6 +144,12 @@ def main():
         min_tracking_confidence=min_tracking_confidence,
     )
 
+    if enable_teleop:
+        # Initialize socket to send keypoints
+        ss = SocketSend()
+        # sr = SocketReceiveSignal()
+
+
     cvFpsCalc = CvFpsCalc(buffer_len=10)
 
     if plot_world_landmark:
@@ -175,8 +184,12 @@ def main():
             if results.pose_world_landmarks is not None:
                 cv.putText(debug_image, "TRACKING", (cap_width-100, 30),
                    cv.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2, cv.LINE_AA)
-                do_teleop(results.pose_world_landmarks)
+                if not do_teleop(results.pose_world_landmarks):
+                    # limit reached
+                    cv.putText(debug_image, "LIMIT", (cap_width-100, 90),
+                        cv.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2, cv.LINE_AA)
 
+                socket_stream_landmarks(ss, results.pose_world_landmarks)
 
         cv.putText(debug_image, "FPS:" + str(display_fps), (10, 30),
                    cv.FONT_HERSHEY_SIMPLEX, 1.0, (0, 145, 255), 2, cv.LINE_AA)
@@ -190,12 +203,99 @@ def main():
     cap.release()
     cv.destroyAllWindows()
 
+import numpy as np
+
+def socket_stream_landmarks(ss, landmarks):
+    """
+
+    #     {0,  "Nose"},
+    #     {1,  "Neck"},
+    #     {2,  "RShoulder"},
+    #     {3,  "RElbow"},
+    #     {4,  "RWrist"},
+    #     {5,  "LShoulder"},
+    #     {6,  "LElbow"},
+    #     {7,  "LWrist"},
+    #     {8,  "MidHip"},
+    #     {9,  "RHip"},
+
+    body_mapping = {'0':  "Nose",      -> 0
+                    '1':  "Neck",      -? 11+12
+
+                    '2':  "RShoulder", -> 12
+                    '3':  "RElbow",    -> 14
+                    '4':  "RWrist",    -> 16
+
+                    '5':  "LShoulder", -> 11
+                    '6':  "LElbow",    -> 13
+                    '7':  "LWrist",    -> 15
+
+                    '8':  "MidHip"      -> 23+24}
+
+    needed are ten landmarks in 3D:
+      0:
+      1:
+      2:
+
+
+    """
+
+    p = []
+    for index, landmark in enumerate(landmarks.landmark):
+        p.append([landmark.x, landmark.y, landmark.z])
+    # p = np.array(p)
+
+    pNeck =   (np.array(p[11]) + np.array(p[12])).tolist()
+    pMidHip = (np.array(p[23]) + np.array(p[24])).tolist()
+    
+    wp_dict = {}
+
+    wp_dict['0'] = p[0]    # Nose
+    wp_dict['1'] = pNeck   # Neck
+    wp_dict['2'] = p[12]   # RShoulder
+    wp_dict['3'] = p[14]   # RElbow
+    wp_dict['4'] = p[16]   # RWrist
+    wp_dict['5'] = p[11]   # LShoulder
+    wp_dict['6'] = p[13]   # LElbow
+    wp_dict['7'] = p[15]   # LWrist
+    wp_dict['8'] = pMidHip # MidHip
+    wp_dict['9'] = p[24]   # RHip
+
+    ss.send(wp_dict)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def checkLim(val, limits):
+    return val < limits[0] or val > limits[1]
 
 def do_teleop(landmarks):
     p = []
     for index, landmark in enumerate(landmarks.landmark):
         p.append([landmark.x, landmark.y, landmark.z])
     p = np.array(p)
+
+    limitsLShoulderPitch = [-2.0857, 2.0857]
+    limitsRShoulderPitch = [-2.0857, 2.0857]
+    limitsLShoulderRoll  = [ 0.0087, 1.5620]
+    limitsRShoulderRoll  = [-1.5620,-0.0087]
+    limitsLElbowYaw      = [-2.0857, 2.0857]
+    limitsRElbowYaw      = [-2.0857, 2.0857]
+    limitsLElbowRoll     = [-1.5620,-0.0087]
+    limitsRElbowRoll     = [ 0.0087, 1.5620]
+    limitsHipPitch       = [-1.0385, 1.0385]
+
 
     LShoulderPitch, LShoulderRoll = keypointsToAngles.obtain_LShoulderPitchRoll_angles(p[11]+p[12], p[11], p[13], p[23]+p[24])
     RShoulderPitch, RShoulderRoll = keypointsToAngles.obtain_RShoulderPitchRoll_angles(p[11]+p[12], p[12], p[14], p[23]+p[24])
@@ -205,11 +305,21 @@ def do_teleop(landmarks):
 
     HipPitch = keypointsToAngles.obtain_HipPitch_angles(p[11]+p[12], p[23]+p[24])
 
-    print(HipPitch)
+    if (checkLim(LShoulderPitch, limitsLShoulderPitch) or 
+        checkLim(RShoulderPitch, limitsRShoulderPitch) or
+        checkLim(LShoulderRoll, limitsLShoulderRoll) or 
+        checkLim(RShoulderRoll, limitsRShoulderRoll) or
+        checkLim(LElbowYaw, limitsLElbowYaw) or 
+        checkLim(RElbowYaw, limitsRElbowYaw) or
+        checkLim(LElbowRoll, limitsLElbowRoll) or 
+        checkLim(RElbowRoll, limitsRElbowRoll)):
+        return False
+    else:
+        return True
 
     # confirmed working: shoulderpitch, shoulderroll, elbowroll, 
 
-    print("teleop mhmhmh")
+    # print("teleop mhmhmh")
 
 
 
