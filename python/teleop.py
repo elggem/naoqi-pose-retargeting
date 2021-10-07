@@ -252,12 +252,16 @@ def socket_stream_landmarks(ss, landmarks):
 
     wp_dict['0'] = p[0]    # Nose
     wp_dict['1'] = pNeck   # Neck
-    wp_dict['2'] = p[12]   # RShoulder
-    wp_dict['3'] = p[14]   # RElbow
-    wp_dict['4'] = p[16]   # RWrist
-    wp_dict['5'] = p[11]   # LShoulder
-    wp_dict['6'] = p[13]   # LElbow
-    wp_dict['7'] = p[15]   # LWrist
+    
+
+    wp_dict['2'] = p[11]   # LShoulder
+    wp_dict['3'] = p[13]   # LElbow
+    wp_dict['4'] = p[15]   # LWrist
+    
+    wp_dict['5'] = p[12]   # RShoulder
+    wp_dict['6'] = p[14]   # RElbow
+    wp_dict['7'] = p[16]   # RWrist
+    
     wp_dict['8'] = pMidHip # MidHip
 
     # print(wp_dict)
