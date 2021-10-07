@@ -15,6 +15,8 @@ from socket_receive import SocketReceiveSignal
 
 keypointsToAngles = KeypointsToAngles()
 
+
+from time import sleep
 """
 # Mediapipe Mapping:
   NOSE = 0
@@ -96,6 +98,9 @@ def get_args():
     parser.add_argument("--width", help='cap width', type=int, default=960)
     parser.add_argument("--height", help='cap height', type=int, default=540)
 
+    parser.add_argument("--video", type=str, default="")
+
+
     parser.add_argument("--model_complexity",
                         help='model_complexity(0,1(default),2)',
                         type=int,
@@ -132,9 +137,15 @@ def main():
     plot_world_landmark = args.plot_world_landmark
     enable_teleop = args.enable_teleop
 
-    cap = cv.VideoCapture(cap_device)
-    cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
-    cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
+    video = args.video
+
+    if len(video) == 0:
+        cap = cv.VideoCapture(cap_device)
+        cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
+        cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
+    else:
+        cap = cv.VideoCapture(video)
+
 
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(
@@ -147,7 +158,7 @@ def main():
     if enable_teleop:
         # Initialize socket to send keypoints
         ss = SocketSend()
-        # sr = SocketReceiveSignal()
+        sr = SocketReceiveSignal()
 
 
     cvFpsCalc = CvFpsCalc(buffer_len=10)
@@ -160,6 +171,8 @@ def main():
         fig.subplots_adjust(left=0.0, right=1, bottom=0, top=1)
 
     while True:
+        sleep(0.06)
+
         display_fps = cvFpsCalc.get()
 
         ret, image = cap.read()
