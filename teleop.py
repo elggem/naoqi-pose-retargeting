@@ -82,11 +82,11 @@ def main():
 
     if len(video) == 0:
         cap = cv.VideoCapture(cap_device)
-        cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
-        cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
     else:
         cap = cv.VideoCapture(video)
 
+    cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
+    cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
 
     mp_pose = mp.solutions.pose
     pose = mp_pose.Pose(
@@ -132,11 +132,11 @@ def main():
                 plot_world_landmarks(plt, ax, results.pose_world_landmarks)
 
         if results.pose_world_landmarks is not None:
-            cv.putText(debug_image, "TRACKING", (cap_width-100, 30),
+            cv.putText(debug_image, "TRACKING", (10, 90),
                 cv.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2, cv.LINE_AA)
             if not do_teleop(results.pose_world_landmarks):
                 # limit reached
-                cv.putText(debug_image, "LIMIT", (cap_width-100, 90),
+                cv.putText(debug_image, "LIMIT", (10, 140),
                     cv.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2, cv.LINE_AA)
 
             if enable_teleop:
@@ -215,13 +215,13 @@ def do_teleop(landmarks):
     pNeck =   (0.5 * (np.array(p[11]) + np.array(p[12]))).tolist()
     pMidHip = (0.5 * (np.array(p[23]) + np.array(p[24]))).tolist()
 
-    LShoulderPitch, LShoulderRoll = keypointsToAngles.obtain_LShoulderPitchRoll_angles(p[11]+p[12], p[11], p[13], p[23]+p[24])
-    RShoulderPitch, RShoulderRoll = keypointsToAngles.obtain_RShoulderPitchRoll_angles(p[11]+p[12], p[12], p[14], p[23]+p[24])
+    LShoulderPitch, LShoulderRoll = keypointsToAngles.obtain_LShoulderPitchRoll_angles(pNeck, p[11], p[13], pMidHip)
+    RShoulderPitch, RShoulderRoll = keypointsToAngles.obtain_RShoulderPitchRoll_angles(pNeck, p[12], p[14], pMidHip)
     
     LElbowYaw, LElbowRoll = keypointsToAngles.obtain_LElbowYawRoll_angle(pNeck, p[11], p[13], p[15])
     RElbowYaw, RElbowRoll = keypointsToAngles.obtain_RElbowYawRoll_angle(pNeck, p[12], p[14], p[16])
 
-    HipPitch = keypointsToAngles.obtain_HipPitch_angles(pNeck, pMidHip)
+    HipPitch = keypointsToAngles.obtain_HipPitch_angles(pMidHip, pNeck) # This is switched, why?
 
     angles = [LShoulderPitch,LShoulderRoll, LElbowYaw, LElbowRoll, RShoulderPitch,RShoulderRoll, RElbowYaw, RElbowRoll, HipPitch]
 
