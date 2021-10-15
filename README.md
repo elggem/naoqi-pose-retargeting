@@ -30,7 +30,7 @@ To teleoperate Pepper from webcam, use
 python teleop.py --enable_teleop
 ```
 
-> :warning: **The Hip Pitch is currently not being calculated correctly**: To fix the hip, change [this line](https://github.com/FraPorta/pepper_openpose_teleoperation/blob/11d4bbd98270fab7a822a7e5b6bbb124f9b6933f/pepper_teleoperation/pepper_approach_control_thread.py#L437) from `self.HipPitch` to `0`. 
+> :warning: **The Hip Pitch is currently not being calculated correctly**: To force the hip to stay in a neutral position, change [this line](https://github.com/FraPorta/pepper_openpose_teleoperation/blob/11d4bbd98270fab7a822a7e5b6bbb124f9b6933f/pepper_teleoperation/pepper_approach_control_thread.py#L437) from `self.HipPitch` to `0`. 
 
 ## Notes
 
