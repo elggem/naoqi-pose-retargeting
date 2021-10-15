@@ -7,8 +7,7 @@ This repository provides scripts to capture 3D human pose using [Mediapipe Pose]
 TBD
 
 ## Todo
- - [~] Code cleanup 
- - [~] Actuator velocity and FPS parameters.
+ - [ ] Actuator velocity and FPS parameters.
 
  - [ ] Record testcase video that triggers faulty behaviour
  - [ ] Prohibit moving hands behind body to avoid safety artifacts
