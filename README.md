@@ -2,7 +2,7 @@
 
 ![Retargeting Animation](https://raw.githubusercontent.com/elggem/naoqi-pose-retargeting/main/images/animation.gif)
 
-This repository provides scripts to capture 3D human pose using [Mediapipe Pose](https://google.github.io/mediapipe/solutions/pose.html) and retarget it onto Pepper and Nao robots using the NAOqi SDK. It works alongside the receiver code from [this repository](https://github.com/FraPorta/pepper_openpose_teleoperation/tree/main/pepper_teleoperation).
+This repository provides scripts to capture 3D human pose using [Mediapipe Pose](https://google.github.io/mediapipe/solutions/pose.html) and retarget it onto Pepper and Nao robots using the NAOqi SDK. It works alongside the receiver and uses parts of the code for retargeting and socket communication from [this repository](https://github.com/FraPorta/pepper_openpose_teleoperation/tree/main/pepper_teleoperation).
 
 ## Installation and Usage
 
