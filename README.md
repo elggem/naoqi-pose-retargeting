@@ -1,5 +1,7 @@
 # naoqi-pose-retargeting
 
+![Retargeting Animation](https://raw.githubusercontent.com/elggem/naoqi-pose-retargeting/main/images/animation.gif)
+
 This repository provides scripts to capture 3D human pose using [Mediapipe Pose](https://google.github.io/mediapipe/solutions/pose.html) and retarget it onto Pepper and Nao robots using the NAOqi SDK.
 
 ## Installation and Usage
@@ -28,12 +30,8 @@ OpenPose to Mediapipe Body Mapping
 ```
 
 ## Todo
- - [ ] Actuator velocity and FPS parameters.
-
- - [ ] Record testcase video that triggers faulty behaviour
- - [ ] Prohibit moving hands behind body to avoid safety artifacts
-
+ - [ ] fix hip movement
+ - [ ] documentation
  - [ ] Try simulation and observe safety features and behaviour
- - [ ] Turning off safety features
 
- - [ ] Hand jaw movement fixes
+
