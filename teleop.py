@@ -2,21 +2,19 @@
 # -*- coding: utf-8 -*-
 import copy
 import argparse
-
 import cv2 as cv
 import numpy as np
 import mediapipe as mp
 
+from time import sleep
+
 from utils import CvFpsCalc
 from utils import KeypointsToAngles
-
-from socket_send import SocketSend
-from socket_receive import SocketReceiveSignal
+from utils import SocketSend
+from utils import SocketReceiveSignal
 
 keypointsToAngles = KeypointsToAngles()
 
-
-from time import sleep
 """
 # Mediapipe Mapping:
   NOSE = 0
