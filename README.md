@@ -6,25 +6,13 @@ This repository provides scripts to capture 3D human pose using [Mediapipe Pose]
 
 TBD
 
-## Todo
- - [ ] Actuator velocity and FPS parameters.
-
- - [ ] Record testcase video that triggers faulty behaviour
- - [ ] Prohibit moving hands behind body to avoid safety artifacts
-
- - [ ] Try simulation and observe safety features and behaviour
- - [ ] Turning off safety features
-
- - [ ] Hand jaw movement fixes
-
-
 ## Notes
 
 Mediapipe Landmark mapping ([source](https://google.github.io/mediapipe/solutions/pose.html)).
 ![Mediapipe Landmark Mapping](https://google.github.io/mediapipe/images/mobile/pose_tracking_full_body_landmarks.png)
 
 OpenPose to Mediapipe Body Mapping
-````
+```
     body_mapping = {'0':  "Nose",      -> 0
                     '1':  "Neck",      -? 11+12
 
@@ -38,3 +26,14 @@ OpenPose to Mediapipe Body Mapping
 
                     '8':  "MidHip"      -> 23+24}
 ```
+
+## Todo
+ - [ ] Actuator velocity and FPS parameters.
+
+ - [ ] Record testcase video that triggers faulty behaviour
+ - [ ] Prohibit moving hands behind body to avoid safety artifacts
+
+ - [ ] Try simulation and observe safety features and behaviour
+ - [ ] Turning off safety features
+
+ - [ ] Hand jaw movement fixes
