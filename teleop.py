@@ -39,7 +39,7 @@ def get_args():
     parser.add_argument("--model_complexity",
                         help='model_complexity(0,1(default),2)',
                         type=int,
-                        default=1)
+                        default=0)
     parser.add_argument("--min_detection_confidence",
                         help='min_detection_confidence',
                         type=float,
@@ -88,13 +88,22 @@ def main():
     cap.set(cv.CAP_PROP_FRAME_WIDTH, cap_width)
     cap.set(cv.CAP_PROP_FRAME_HEIGHT, cap_height)
 
-    mp_pose = mp.solutions.pose
-    pose = mp_pose.Pose(
+    # mp_pose = mp.solutions.pose
+    # pose = mp_pose.Pose(
+    #     model_complexity=model_complexity,
+    #     enable_segmentation=False,
+    #     min_detection_confidence=min_detection_confidence,
+    #     min_tracking_confidence=min_tracking_confidence,
+    # )
+
+    mp_drawing = mp.solutions.drawing_utils
+    mp_drawing_styles = mp.solutions.drawing_styles
+
+    mp_holistic = mp.solutions.holistic
+    holistic = mp_holistic.Holistic(
         model_complexity=model_complexity,
-        enable_segmentation=False,
-        min_detection_confidence=min_detection_confidence,
-        min_tracking_confidence=min_tracking_confidence,
-    )
+        min_detection_confidence=0.1,
+        min_tracking_confidence=0.1)    
 
     if enable_teleop:
         # Initialize socket to send keypoints
@@ -117,15 +126,47 @@ def main():
         if not ret:
             break
         image = cv.flip(image, 1)
+        #image = cv.resize(image, None, fx=0.5, fy=0.5)
+
         debug_image = copy.deepcopy(image)
 
         image = cv.cvtColor(image, cv.COLOR_BGR2RGB)
-        results = pose.process(image)
+
+        # results = pose.process(image)
+        results = holistic.process(image)
+
+        # if results.face_landmarks is not None:
+        #     mp_drawing.draw_landmarks(
+        #         debug_image,
+        #         results.face_landmarks,
+        #         mp_holistic.FACEMESH_CONTOURS,
+        #         landmark_drawing_spec=None,
+        #         connection_drawing_spec=mp_drawing_styles
+        #         .get_default_face_mesh_contours_style())
 
         if results.pose_landmarks is not None:
-            brect = calc_bounding_rect(debug_image, results.pose_landmarks)
-            debug_image = draw_landmarks(debug_image, results.pose_landmarks)
-            debug_image = draw_bounding_rect(use_brect, debug_image, brect)
+            mp_drawing.draw_landmarks(
+                debug_image,
+                results.pose_landmarks,
+                mp_holistic.POSE_CONNECTIONS,
+                landmark_drawing_spec=mp_drawing_styles
+                .get_default_pose_landmarks_style())
+
+        if results.left_hand_landmarks is not None:
+            mp_drawing.draw_landmarks(
+                debug_image,
+                results.left_hand_landmarks,
+                mp_holistic.HAND_CONNECTIONS,
+                mp_drawing_styles.get_default_hand_landmarks_style(),
+                mp_drawing_styles.get_default_hand_connections_style())
+
+        if results.right_hand_landmarks is not None:
+            mp_drawing.draw_landmarks(
+                debug_image,
+                results.right_hand_landmarks,
+                mp_holistic.HAND_CONNECTIONS,
+                mp_drawing_styles.get_default_hand_landmarks_style(),
+                mp_drawing_styles.get_default_hand_connections_style())
 
         if plot_world_landmark:
             if results.pose_world_landmarks is not None:
