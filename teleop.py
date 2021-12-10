@@ -181,7 +181,7 @@ def main():
                     cv.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2, cv.LINE_AA)
 
             if enable_teleop:
-                socket_stream_landmarks(ss, results.pose_world_landmarks)
+                socket_stream_landmarks(ss, results)
 
         cv.putText(debug_image, "FPS:" + str(display_fps), (10, 30),
                    cv.FONT_HERSHEY_SIMPLEX, 1.0, (0, 145, 255), 2, cv.LINE_AA)
@@ -196,7 +196,7 @@ def main():
             sleep(max(1./fps - (time() - start), 0))
 
     if plot_angle_trace:
-        angle_labels = ["LShoulderPitch","LShoulderRoll", "LElbowYaw", "LElbowRoll", "RShoulderPitch","RShoulderRoll", "RElbowYaw", "RElbowRoll", "HipPitch"]
+        angle_labels = ["LShoulderPitch","LShoulderRoll", "LElbowYaw", "LElbowRoll", "RShoulderPitch","RShoulderRoll", "RElbowYaw", "RElbowRoll", "HipPitch", "LWristYaw", "RWristYaw"]
         angle_trace = np.array(angle_trace)
         lines = plt.plot(angle_trace[:,:])
         plt.legend(iter(lines), angle_labels[:])
@@ -205,7 +205,9 @@ def main():
     cap.release()
     cv.destroyAllWindows()
 
-def socket_stream_landmarks(ss, landmarks):
+def socket_stream_landmarks(ss, results):
+    landmarks = results.pose_landmarks
+
     p = []
     for index, landmark in enumerate(landmarks.landmark):
         p.append([landmark.x, landmark.y, landmark.z])
@@ -228,6 +230,31 @@ def socket_stream_landmarks(ss, landmarks):
     wp_dict['7'] = p[16]   # RWrist
     
     wp_dict['8'] = pMidHip # MidHip
+
+    # left hand
+    wp_dict['9'] = [0.0,0.0,0.0]
+    wp_dict['10'] = [0.0,0.0,0.0]
+    wp_dict['11'] = [0.0,0.0,0.0]
+    # right hand
+    wp_dict['12'] = [0.0,0.0,0.0]
+    wp_dict['13'] = [0.0,0.0,0.0]
+    wp_dict['14'] = [0.0,0.0,0.0]
+
+    if results.left_hand_landmarks is not None:
+        lhp = []
+        for index, landmark in enumerate(results.left_hand_landmarks.landmark):
+            lhp.append([landmark.x, landmark.y, landmark.z])
+        wp_dict['9'] = lhp[0]
+        wp_dict['10'] = lhp[5]
+        wp_dict['11'] = lhp[17]
+
+    if results.right_hand_landmarks is not None:
+        rhp = []
+        for index, landmark in enumerate(results.right_hand_landmarks.landmark):
+            rhp.append([landmark.x, landmark.y, landmark.z])
+        wp_dict['12'] = rhp[0]
+        wp_dict['13'] = rhp[5]
+        wp_dict['14'] = rhp[17]
 
     # print(wp_dict)
     ss.send(wp_dict)
@@ -269,13 +296,24 @@ def do_teleop(results):
     ## HANDS
 
     if results.left_hand_landmarks is not None:
-        LWristYaw = 1
+        lhp = []
+        for index, landmark in enumerate(results.left_hand_landmarks.landmark):
+            lhp.append([landmark.x, landmark.y, landmark.z])
+        lhp = np.array(lhp)
+        LWristYaw = keypointsToAngles.obtain_LWrist_angle(lhp[0], lhp[5], lhp[17])
     else:
         LWristYaw = 0
 
+    if results.right_hand_landmarks is not None:
+        rhp = []
+        for index, landmark in enumerate(results.right_hand_landmarks.landmark):
+            rhp.append([landmark.x, landmark.y, landmark.z])
+        rhp = np.array(rhp)
+        RWristYaw = keypointsToAngles.obtain_LWrist_angle(rhp[0], rhp[5], rhp[17])
+    else:
+        RWristYaw = 0
 
-
-    angles = [LShoulderPitch,LShoulderRoll, LElbowYaw, LElbowRoll, RShoulderPitch,RShoulderRoll, RElbowYaw, RElbowRoll, HipPitch]
+    angles = [LShoulderPitch,LShoulderRoll, LElbowYaw, LElbowRoll, RShoulderPitch,RShoulderRoll, RElbowYaw, RElbowRoll, HipPitch, LWristYaw, RWristYaw]
 
     print(angles)
     angle_trace.append(angles)

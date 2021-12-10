@@ -365,3 +365,14 @@ class KeypointsToAngles(object):
         
         return HipPitch
     
+    ##  function obtain_HipPitch_angles
+    # 
+    #   Calculate right hip pitch angle
+    def obtain_LWrist_angle(self, P0, P5, P17):
+        # ref: https://google.github.io/mediapipe/images/mobile/hand_landmarks.png
+        max_range = 1.82 # 104deg
+        dist = np.sqrt(np.power((P5[0]-P17[0])+(P5[1]-P17[1])+(P5[2]-P17[2]),2)) * 20
+        if P5[2]>P17[2]:
+            return -dist
+        else:
+            return dist
