@@ -175,7 +175,7 @@ def main():
         if results.pose_world_landmarks is not None:
             cv.putText(debug_image, "TRACKING", (10, 90),
                 cv.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2, cv.LINE_AA)
-            if not do_teleop(results.pose_world_landmarks):
+            if not do_teleop(results):
                 # limit reached
                 cv.putText(debug_image, "LIMIT", (10, 140),
                     cv.FONT_HERSHEY_SIMPLEX, 1.0, (0, 0, 255), 2, cv.LINE_AA)
@@ -236,7 +236,9 @@ def checkLim(val, limits):
     return val < limits[0] or val > limits[1]
 
 
-def do_teleop(landmarks):
+def do_teleop(results):
+    landmarks = results.pose_landmarks
+
     global angle_trace
     p = []
     for index, landmark in enumerate(landmarks.landmark):
@@ -263,6 +265,15 @@ def do_teleop(landmarks):
     RElbowYaw, RElbowRoll = keypointsToAngles.obtain_RElbowYawRoll_angle(pNeck, p[12], p[14], p[16])
 
     HipPitch = keypointsToAngles.obtain_HipPitch_angles(pMidHip, pNeck) # This is switched, why?
+
+    ## HANDS
+
+    if results.left_hand_landmarks is not None:
+        LWristYaw = 1
+    else:
+        LWristYaw = 0
+
+
 
     angles = [LShoulderPitch,LShoulderRoll, LElbowYaw, LElbowRoll, RShoulderPitch,RShoulderRoll, RElbowYaw, RElbowRoll, HipPitch]
 
